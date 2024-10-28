@@ -20,6 +20,17 @@ class ItinerarySerializer(serializers.ModelSerializer):
 class PackageSerializer(serializers.ModelSerializer):
     itinerary = ItinerarySerializer(many=True)
 
+    def create(self, validated_data):
+        itinerary_data = validated_data.pop("itinerary")
+        package = Package.objects.create(**validated_data)
+        for item in itinerary_data:
+            activity_data = item.pop("activity")
+            itinerary = Itinerary.objects.create(package=package, **item)
+            for active in activity_data:
+                Activity.objects.create(itinerary=itinerary, **active)
+
+        return package
+
     class Meta:
         model = Package
         fields = ["title", "itinerary"]

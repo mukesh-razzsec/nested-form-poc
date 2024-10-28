@@ -8,24 +8,104 @@
 </head>
 
 <body>
-    <form method="POST" action="/create-package">
+    <form id="packageForm">
         <label for="package_title">Package Title</label>
         <input id="package_title" name="title">
 
-        <div style="border: 5px solid black">
-            <h1>Itinerary</h1>
-            <label for="package_itinerary_title_0">Itinerary Title</label>
-            <input id="package_itinerary_title_0" name="itinerary[0].title">
-
-            <div style="border: 5px solid gold">
-                <h2>Activities</h2>
-                <label for="package_itinerary_activity_title_0">Itinerary Title</label>
-                <input id="package_itinerary_activity_title_0" name="itinerary[0].activity[0].title">
-            </div>
+        <div id="itinerariesContainer">
+            <!-- Itinerary items will be added here -->
         </div>
 
-        <button type="submit">Submit</button>
+        <button type="button" onclick="addItinerary()">Add Itinerary</button>
+        <button type="button" onclick="submitForm()">Submit</button>
     </form>
+
+    <script>
+        let itineraryCount = 0;
+
+        function addItinerary() {
+            const itineraryIndex = itineraryCount++;
+            const itinerariesContainer = document.getElementById('itinerariesContainer');
+
+            const itineraryDiv = document.createElement('div');
+            itineraryDiv.className = 'itinerary';
+            itineraryDiv.style.border = '5px solid black';
+            itineraryDiv.innerHTML = `
+        <h1>Itinerary</h1>
+        <label for="package_itinerary_title_${itineraryIndex}">Itinerary Title</label>
+        <input id="package_itinerary_title_${itineraryIndex}" name="itinerary[${itineraryIndex}].title">
+
+        <div id="activitiesContainer_${itineraryIndex}">
+            <!-- Activities will be added here -->
+        </div>
+
+        <button type="button" onclick="addActivity(${itineraryIndex})">Add Activity</button>
+        <button type="button" onclick="removeItinerary(${itineraryIndex})">Remove Itinerary</button>
+    `;
+            itinerariesContainer.appendChild(itineraryDiv);
+        }
+
+        function addActivity(itineraryIndex) {
+            const activitiesContainer = document.getElementById(`activitiesContainer_${itineraryIndex}`);
+            const activityCount = activitiesContainer.children.length;
+
+            const activityDiv = document.createElement('div');
+            activityDiv.className = 'activity';
+            activityDiv.style.border = '5px solid gold';
+            activityDiv.innerHTML = `
+        <h2>Activities</h2>
+        <label for="package_itinerary_activity_title_${itineraryIndex}_${activityCount}">Activity Title</label>
+        <input id="package_itinerary_activity_title_${itineraryIndex}_${activityCount}" name="itinerary[${itineraryIndex}].activity[${activityCount}].title">
+        <button type="button" onclick="removeActivity(${itineraryIndex}, ${activityCount})">Remove Activity</button>
+    `;
+            activitiesContainer.appendChild(activityDiv);
+        }
+
+        function removeItinerary(itineraryIndex) {
+            const itineraryDiv = document.getElementById(`package_itinerary_title_${itineraryIndex}`).closest('.itinerary');
+            itineraryDiv.remove();
+        }
+
+        function removeActivity(itineraryIndex, activityIndex) {
+            const activityDiv = document.getElementById(`package_itinerary_activity_title_${itineraryIndex}_${activityIndex}`).closest('.activity');
+            activityDiv.remove();
+        }
+
+        function submitForm() {
+            const form = document.getElementById('packageForm');
+            const formData = new FormData(form);
+
+            const data = { title: formData.get("title"), itinerary: [] };
+
+            // Group itineraries and activities in a structured JSON format
+            formData.forEach((value, key) => {
+                if (key.startsWith('itinerary')) {
+                    const match = key.match(/itinerary\[(\d+)](?:\.activity\[(\d+)]|)\.title/);
+                    if (match) {
+                        const [_, itineraryIndex, activityIndex] = match;
+                        if (!data.itinerary[itineraryIndex]) {
+                            data.itinerary[itineraryIndex] = { title: "", activity: [] };
+                        }
+                        if (activityIndex === undefined) {
+                            data.itinerary[itineraryIndex].title = value;
+                        } else {
+                            data.itinerary[itineraryIndex].activity[activityIndex] = { title: value };
+                        }
+                    }
+                }
+            });
+
+            console.log(JSON.stringify(data, null, 2));  // Log JSON object to console
+
+            // Simulate sending data to a server
+            fetch('/create-package', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        }
+
+    </script>
 </body>
 
 </html>
