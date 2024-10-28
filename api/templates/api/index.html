@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Package</title>
+</head>
+
+<body>
+    <form method="POST" action="/create-package">
+        <label for="package_title">Package Title</label>
+        <input id="package_title" name="title">
+
+        <div style="border: 5px solid black">
+            <h1>Itinerary</h1>
+            <label for="package_itinerary_title_0">Itinerary Title</label>
+            <input id="package_itinerary_title_0" name="itinerary[0].title">
+
+            <div style="border: 5px solid gold">
+                <h2>Activities</h2>
+                <label for="package_itinerary_activity_title_0">Itinerary Title</label>
+                <input id="package_itinerary_activity_title_0" name="itinerary[0].activity[0].title">
+            </div>
+        </div>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+
+</html>
